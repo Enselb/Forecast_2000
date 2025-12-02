@@ -1,6 +1,6 @@
 pandas
 numpy
-xgboost-cpu
-XGBRegressor
+xgboost
+lightgbm
 google.cloud
 google.oauth2
