@@ -7,4 +7,3 @@ def visualisation( y_true, y_pred):
     sns.lineplot(y_pred, marker = "o")
     sns.lineplot(y_true, marker = "o")
     return y_true, y_pred
-

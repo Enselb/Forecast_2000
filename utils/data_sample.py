@@ -1,16 +1,16 @@
 import pandas as pd
-from google.cloud import storage
-from google.oauth2 import service_account
+from google.cloud import storage bigquery
+##from google.oauth2 import service_account
 
 def get_sales_sample():
     """Retourne un dataframe des ventes light
 
     """
-    credentials = service_account.Credentials.from_service_account_file(
-        '/home/bertrand/code/Enselb/Forecast_2000/forecast2000-ec89eb4db84e.json')
+    ##credentials = service_account.Credentials.from_service_account_file(
+        ##'/home/bertrand/code/Enselb/Forecast_2000/forecast2000-ec89eb4db84e.json')
 
-    client = storage.Client(project='forecast2000',
-        credentials=credentials)
+    client = storage.Client(project='forecast2000'
+        )
 
     # download fichiers calendar, sales et prices du bucket Google Cloud et
     # sauvegarde dans le répertoire 'data'

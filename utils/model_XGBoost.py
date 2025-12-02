@@ -1,0 +1,33 @@
+from xgboost import XGBRegressor
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from sklearn.pipeline import make_pipeline
+
+def model_XGB(X_train, y_train, X_val, y_val, X_test, y_test):
+    XGB_model = XGBRegressor(
+        max_depth=10, n_estimators=100,
+        learning_rate=0.1,
+        objective='reg:tweedie',
+        tweedie_variance_power=1.1,
+        tree_method='hist',
+        enable_categorical=True,
+        n_jobs=-1,
+        random_state=42,
+        early_stopping_rounds=5,
+        eval_metric='rmse'
+    )
+
+    XGB_model.fit(X_train, y_train,
+        eval_set=[(X_train, y_train), (X_val, y_val)],
+        verbose=100,
+    )
+
+    # Prédictions
+    y_pred = XGB_model.predict(X_test)
+
+    # Performance
+    rmse = mean_squared_error(y_test, y_pred)
+    print(f"RMSE sur le test set : {rmse:.4f}")
+
+    return XGB_model
