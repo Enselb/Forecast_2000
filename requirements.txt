@@ -2,3 +2,5 @@ pandas
 numpy
 xgboost-cpu
 XGBRegressor
+google.cloud
+google.oauth2
