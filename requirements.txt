@@ -4,3 +4,4 @@ xgboost-cpu
 XGBRegressor
 google.cloud
 google.oauth2
+scikit-learn
