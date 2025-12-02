@@ -21,3 +21,5 @@ def split_data(df) :
     #Définition X et Y Test
     X_test= df_test.drop(columns =['value'])
     y_test =df_test['value']
+
+    return X_train,X_test,y_train,y_test
