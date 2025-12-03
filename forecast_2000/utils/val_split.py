@@ -1,3 +1,5 @@
+import pandas as pd
+
 def val_split(X_train ,y_train) :
     date_fin = X_train.index.max()
     nb_jours = pd.Timedelta(days=28)

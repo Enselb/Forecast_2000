@@ -97,6 +97,13 @@ def get_full_data():
     for fichier in fichiers:
         downcast(fichier)
 
+    # Echantillonnage du fichier des ventes
+    sub_cat = 'HOBBIES_2'
+    year = 2016
+    store = 'CA_1'
+    sales = sales[(sales['dept_id'] == sub_cat) & (sales['store_id'] == store) & (sales['year'] == year)]
+
+
     print("Transposition des ventes...")
     # Transposition des ventes et drop des valeurs manquantes
     df = pd.melt(
