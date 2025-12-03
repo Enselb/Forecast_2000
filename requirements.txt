@@ -1,17 +1,11 @@
 pandas
 numpy
 xgboost
-<<<<<<< HEAD
 #XGBRegressor
 tensorflow
 statsmodels
 scikit-learn
 pmdarima
-
 lightgbm
-
-
-
+tqdm
 google.cloud
-google.oauth2
->>>>>>> 71e153229bd2fb4b2e56f7f72153e897ad6fab8f
