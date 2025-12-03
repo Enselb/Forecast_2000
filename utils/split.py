@@ -1,3 +1,6 @@
+## Import
+import pandas as pd
+
 ## Train / Test Split Function
 #Début de  la fonction
 def split_data(df) :
@@ -15,11 +18,11 @@ def split_data(df) :
     df_test = df.loc[date_seuil:]
 
     #Définiton X et Y Train
-    X_train = df_train.drop(columns=['value'])
-    y_train = df_train['value']
+    X_train = df_train.drop(columns=['sales'])
+    y_train = df_train['sales']
 
     #Définition X et Y Test
-    X_test= df_test.drop(columns =['value'])
-    y_test =df_test['value']
+    X_test= df_test.drop(columns =['sales'])
+    y_test =df_test['sales']
 
     return X_train,X_test,y_train,y_test

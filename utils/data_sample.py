@@ -1,5 +1,5 @@
 import pandas as pd
-from google.cloud import storage bigquery
+from google.cloud import storage
 ##from google.oauth2 import service_account
 
 def get_sales_sample():
