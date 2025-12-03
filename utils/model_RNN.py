@@ -30,6 +30,7 @@ def model_LSTM(X_train, y_train, X_val, y_val, X_test, y_test):
         restore_best_weights=True
     )
 
+
     history = LSTM_model.fit(
         X_train,
         y_train,
@@ -48,3 +49,4 @@ def model_LSTM(X_train, y_train, X_val, y_val, X_test, y_test):
     print(f"RMSE sur le test set : {rmse:.4f}")
 
     return LSTM_model, history, y_pred
+
