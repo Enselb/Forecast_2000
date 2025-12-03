@@ -1,10 +1,16 @@
 from xgboost import XGBRegressor
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
-from sklearn.pipeline import make_pipeline
 
 def model_XGB(X_train, y_train, X_val, y_val, X_test, y_test):
+    # Convert to Pandas category
+    X = [X_train, X_val, X_test]
+    for df in X:
+        cats = df.select_dtypes(exclude=np.number).columns.tolist()
+        for col in cats:
+            df[col] = df[col].astype('category')
+
+
     XGB_model = XGBRegressor(
         max_depth=10, n_estimators=100,
         learning_rate=0.1,
@@ -30,4 +36,4 @@ def model_XGB(X_train, y_train, X_val, y_val, X_test, y_test):
     rmse = mean_squared_error(y_test, y_pred)
     print(f"RMSE sur le test set : {rmse:.4f}")
 
-    return XGB_model, y_pred
+    return XGB_model
