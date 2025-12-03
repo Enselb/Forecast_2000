@@ -1,15 +1,12 @@
-def val_split(df) :
-    #Définition du nombre de jours pour le val set
-    val_horizon = 28
-    # Nombre total d'observations dans le train
-    n = len(X_train)
-    # Position où commence la validation
-    val_start = n - val_horizon
-    # Définition du val set
-    X_val = X_train.iloc[val_start : n]
-    y_val = y_train.iloc[val_start : n]
+def val_split(X_train ,y_train) :
+    date_fin = X_train.index.max()
+    nb_jours = pd.Timedelta(days=28)
+    date_seuil = date_fin - nb_jours
     # train final = du début du train au début du val start exclus
-    X_train = X_train.iloc[0 : val_start]
-    y_train= y_train.iloc[0 : val_start]
+    X_train = X_train.loc[:date_seuil]
+    y_train= y_train.loc[:date_seuil]
+    # Définition du val set
+    X_val = X_train.loc[date_seuil:]
+    y_val = y_train.loc[date_seuil:]
 
     return X_train,y_train,X_val, y_val
