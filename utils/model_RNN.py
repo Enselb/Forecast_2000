@@ -8,7 +8,7 @@ def initialize_model(input_shape: tuple) -> Model:
     """
     Initialize CNN
     """
-
+    input_shape = df.shape
     model = Sequential()# j'instentie mon modèle
 
     model.add(Input(shape = (input_shape[1],1))) # pas sûr de l'INPUT
@@ -61,9 +61,8 @@ def evaluate_model(
         y: np.ndarray,
         batch_size=64
     ) -> Tuple[Model, dict]:
-    """
-    Evaluate trained model performance on the dataset
-    """
+
     loss,mae = model.evaluate(X_test,y_test)
 
     return metrics
+
