@@ -30,4 +30,4 @@ def model_XGB(X_train, y_train, X_val, y_val, X_test, y_test):
     rmse = mean_squared_error(y_test, y_pred)
     print(f"RMSE sur le test set : {rmse:.4f}")
 
-    return XGB_model
+    return XGB_model, y_pred

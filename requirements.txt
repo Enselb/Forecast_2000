@@ -9,3 +9,5 @@ pmdarima
 lightgbm
 tqdm
 google.cloud
+scikit-learn
+

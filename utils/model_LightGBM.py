@@ -42,4 +42,4 @@ def model_LightGBM(X_train, y_train, X_val, y_val, X_test, y_test):
     rmse = mean_squared_error(y_test, y_pred)
     print(f"RMSE sur le test set : {rmse:.4f}")
 
-    return lightGBM_model
+    return lightGBM_model, y_pred
