@@ -19,7 +19,7 @@ X_train, X_test, y_train, y_test = split_data(df)
 print("✅Data splitted1")
 
 # Pour LightGBM et XGBoost, créer un set de validation avec les 28 dernières valeurs du Train
-X_train,y_train, X_val, y_val = val_split(X_train, y_train)
+X_train, X_val, y_train, y_val = val_split(X_train, y_train)
 print("✅Data splitted2")
 
 # Pipeline Scikit-learn qui transforme X_train,X_test en X_train_processed et X_test_processed qui seront entraînées dans nos modèles.

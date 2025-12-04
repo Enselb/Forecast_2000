@@ -1,6 +1,6 @@
 from forecast_2000.models.model_RNN import model_LSTM
 from forecast_2000.models.model_LightGBM import  model_LightGBM
-from forecast_2000.models.model_XGBoost import model_XGB
+from forecast_2000.models.model_XGBoost import train_xgboost_model,evaluate_and_predict
 from forecast_2000.models.auto_arima import auto_arima
 
 
@@ -22,7 +22,8 @@ def model_selector(X_train_processed, X_train, y_train, X_val_processed, y_val, 
         print("✅ Modèle 2 done")
 
     elif choix == "3":
-        model = model_XGB(X_train, y_train, X_val, y_val, X_test, y_test)
+        model = train_xgboost_model(X_train, y_train, X_val, y_val)
+        y_pred = evaluate_and_predict(X_test)
         print("✅ Modèle 3 done")
 
     elif choix == "4":
@@ -32,4 +33,4 @@ def model_selector(X_train_processed, X_train, y_train, X_val_processed, y_val, 
     else:
         print("❌ Modèle non existant")
 
-    return model
+    return model, y_pred

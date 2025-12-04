@@ -22,7 +22,7 @@ def model_LSTM(X_train_processed, y_train, X_val_processed, y_val, X_test_proces
     LSTM_model.compile(
         loss="mse",
         optimizer="adam",
-        metrics=["rmse"]
+        metrics=["mae"]
     )
 
     es = EarlyStopping(
