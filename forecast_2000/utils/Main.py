@@ -2,19 +2,15 @@ import numpy as np
 import pandas as pd
 import os
 
-from forecast_2000.utils.data_sample import get_sales_sample
-from forecast_2000.utils.clean_data import fill_event_nans
+from forecast_2000.utils.data_size_selector import get_data_size
 from forecast_2000.utils.split import split_data
 from forecast_2000.utils.val_split import val_split
 from forecast_2000.utils.preprocess import processed_features
-from forecast_2000.utils.Visualisation import visualisation
 from forecast_2000.utils.model_selector import model_selector
+from forecast_2000.utils.Visualisation import visualisation
 
-# Retourne un dataframe des ventes light
-df = get_sales_sample()
-
-# Remplace les valeurs NaN par 'NoEvent' dans les colonnes d'événements spécifiées.
-df = fill_event_nans(df)
+# Retourne un dataframe des ventes ventes sélectionnées
+df = get_data_size()
 
 print("✅Chargement du dataset")
 
