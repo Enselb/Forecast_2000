@@ -5,7 +5,7 @@ import os
 from forecast_2000.utils.data_size_selector import get_data_size
 from forecast_2000.utils.split import split_data
 from forecast_2000.utils.val_split import val_split
-from forecast_2000.utils.preprocess import processed_features
+from forecast_2000.utils.preprocess import preprocess_final
 from forecast_2000.utils.model_selector import model_selector
 from forecast_2000.utils.Visualisation import visualisation
 
@@ -23,11 +23,7 @@ X_train, X_val, y_train, y_val = val_split(X_train, y_train)
 print("✅Data splitted2")
 
 # Pipeline Scikit-learn qui transforme X_train,X_test en X_train_processed et X_test_processed qui seront entraînées dans nos modèles.
-preprocessor = processed_features(df)
-
-X_train_processed = preprocessor.fit_transform(X_train)
-X_val_processed   = preprocessor.transform(X_val)
-X_test_processed  = preprocessor.transform(X_test)
+X_train_processed, X_val_processed, X_test_processed = preprocess_final(X_train, X_val, X_test)
 
 print("✅X_train_processed :", X_train_processed.shape)
 print("✅X_val_processed   :", X_val_processed.shape)
