@@ -1,5 +1,5 @@
 import pandas as pd
-
+"Cette fonction renvoi X_train_test (Train avant split val) etr X_test"
 ## Train / Test Split Function
 #Début de  la fonction
 def split_data(df) :
@@ -17,11 +17,11 @@ def split_data(df) :
     df_test = df.loc[date_seuil:]
 
     #Définiton X et Y Train
-    X_train = df_train.drop(columns=['sales'])
-    y_train = df_train['sales']
+    X_train_val = df_train.drop(columns=['sales'])
+    y_train_val = df_train['sales']
 
     #Définition X et Y Test
     X_test= df_test.drop(columns =['sales'])
     y_test =df_test['sales']
 
-    return X_train,X_test,y_train,y_test
+    return X_train_val,X_test,y_train_val,y_test
