@@ -10,4 +10,5 @@ lightgbm
 tqdm
 google.cloud
 scikit-learn
-
+os
+Tuple
