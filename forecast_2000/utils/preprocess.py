@@ -36,7 +36,7 @@ def processed_features (df : pd.DataFrame):
 
     # Appliquer un column transformer pour paralléliser les séquences
     preproc_int = make_column_transformer(
-        (num_transformer, ['wm_yr_wk','snap_CA','snap_TX','snap_WI','sell_price']),
+        (num_transformer, ['snap_CA','snap_TX','snap_WI','sell_price']),
         (cat_transformer, cat_col),
         (year_transformer, ['year']),
         remainder='passthrough'
