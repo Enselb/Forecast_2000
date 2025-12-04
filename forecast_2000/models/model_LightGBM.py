@@ -3,6 +3,8 @@ from sklearn.metrics import mean_squared_error
 import numpy as np
 import pandas as pd
 from typing import Tuple
+import time
+from forecast_2000.models.save_model_local import save_model_joblib
 
 
 def train_model_LightGBM(X_train: pd.DataFrame, y_train: pd.Series, X_val: pd.DataFrame, y_val: pd.Series) -> lgb.LGBMRegressor:
@@ -23,7 +25,7 @@ def train_model_LightGBM(X_train: pd.DataFrame, y_train: pd.Series, X_val: pd.Da
     """
     print("Configuration du modèle LightGBM...")
     lightGBM_model = lgb.LGBMRegressor(
-            n_estimators=1500,
+            n_estimators=3000,
             learning_rate=0.05,
             objective='tweedie',
             tweedie_variance_power=1.1,
@@ -36,8 +38,11 @@ def train_model_LightGBM(X_train: pd.DataFrame, y_train: pd.Series, X_val: pd.Da
 
     callbacks = [
             lgb.early_stopping(stopping_rounds=50),
-            lgb.log_evaluation(period=100)
+            lgb.log_evaluation(period=1)
         ]
+    # Enregistrement du temps de départ
+    start_time = time.time()
+
     print("Entraînement du modèle LightGBM...")
     lightGBM_model.fit(
             X_train,
@@ -49,6 +54,20 @@ def train_model_LightGBM(X_train: pd.DataFrame, y_train: pd.Series, X_val: pd.Da
             # détecte automatiquement les colonnes de type 'category'.
             callbacks=callbacks
         )
+
+    # Enregistrement du temps de fin
+    end_time = time.time()
+
+    # Calcul de la durée en secondes
+    elapsed_time = end_time - start_time
+    # Conversion en heures/minutes si besoin pour M5 (l'entraînement peut être long)
+    minutes = int(elapsed_time // 60)
+    seconds = int(elapsed_time % 60)
+    print("✅ Entrainement terminé")
+    print(f"Durée d'entrainement : {minutes} minutes et {seconds} secondes.")
+
+    # Sauvegarde du modèle
+    save_model_joblib(lightGBM_model)
 
     return lightGBM_model
 

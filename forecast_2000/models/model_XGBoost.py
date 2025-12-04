@@ -2,6 +2,9 @@ from xgboost import XGBRegressor
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from typing import Tuple
+import time
+from forecast_2000.models.save_model_local import save_model_joblib
+
 
 def train_xgboost_model(X_train, y_train, X_val, y_val) -> XGBRegressor:
     """
@@ -33,11 +36,28 @@ def train_xgboost_model(X_train, y_train, X_val, y_val) -> XGBRegressor:
         eval_metric='rmse'
     )
 
+    # Enregistrement du temps de départ
+    start_time = time.time()
+
     print("Entraînement du modèle XGBoost...")
     XGB_model.fit(X_train, y_train,
         eval_set=[(X_train, y_train), (X_val, y_val)],
         verbose=1,
     )
+
+    # Enregistrement du temps de fin
+    end_time = time.time()
+
+    # Calcul de la durée en secondes
+    elapsed_time = end_time - start_time
+    # Conversion en heures/minutes si besoin pour M5 (l'entraînement peut être long)
+    minutes = int(elapsed_time // 60)
+    seconds = int(elapsed_time % 60)
+    print("✅ Entrainement terminé")
+    print(f"Durée d'entrainement : {minutes} minutes et {seconds} secondes.")
+
+    # Sauvegarde du modèle
+    save_model_joblib(XGB_model)
 
     return XGB_model
 
