@@ -8,8 +8,9 @@ scikit-learn
 pmdarima
 lightgbm
 tqdm
-google.cloud
+google-cloud-storage
 scikit-learn
 joblib
+fastparquet
 fastapi
 uvicorn
