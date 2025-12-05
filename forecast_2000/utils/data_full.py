@@ -116,4 +116,9 @@ def get_full_data():
     # drop des colonnes
     df = df.drop(columns=['id', 'day', 'wm_yr_wk'])
 
+    # gestion des prix Nan
+    df['sell_price'] = df['sell_price'].fillna(0)
+
+    print("✅ Execution terminée.")
+
     return df

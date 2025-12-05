@@ -11,10 +11,11 @@ def split_data(df) :
     date_fin = df.index.max()
     nb_jours = pd.Timedelta(days=28)
     date_seuil = date_fin - nb_jours
+    date_debut = date_fin - pd.Timedelta(days=27)
 
     #Création des Df
     df_train = df.loc[:date_seuil]
-    df_test = df.loc[date_seuil:]
+    df_test = df.loc[date_debut:]
 
     #Définiton X et Y Train
     X_train_val = df_train.drop(columns=['sales'])

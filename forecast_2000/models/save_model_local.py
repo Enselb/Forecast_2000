@@ -8,9 +8,9 @@ def save_model_joblib(model):
     [Modèle]_[Date_Heure].joblib
     """
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") # Ajout des secondes pour unicité
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # Déduction du nom du modèle (ex: LGBM ou XGB)
+    # Déduction du nom du modèle
     model_name = type(model).__name__.replace('Regressor', '').replace('Classifier', '')
 
     # Construction du nom de fichier simplifié

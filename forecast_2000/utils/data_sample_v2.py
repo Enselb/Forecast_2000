@@ -70,7 +70,7 @@ def get_sample_data():
             elif 'float' in str(t):
                 # Traitement des flottants
                 if df[col].min() > np.finfo(np.float16).min and df[col].max() < np.finfo(np.float16).max:
-                    df[col] = df[col].astype(np.float16)
+                    df[col] = df[col].astype(np.float32)
                 elif df[col].min() > np.finfo(np.float32).min and df[col].max() < np.finfo(np.float32).max:
                     df[col] = df[col].astype(np.float32)
                 else:

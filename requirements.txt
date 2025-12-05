@@ -10,5 +10,5 @@ lightgbm
 tqdm
 google.cloud
 scikit-learn
-time
 joblib
+fastparquet
