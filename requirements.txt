@@ -10,5 +10,6 @@ lightgbm
 tqdm
 google.cloud
 scikit-learn
-time
 joblib
+fastapi
+uvicorn
