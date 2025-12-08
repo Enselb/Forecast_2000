@@ -23,17 +23,26 @@ def train_model_LightGBM(X_train: pd.DataFrame, y_train: pd.Series, X_val: pd.Da
     Returns:
         Le modèle LGBMRegressor entraîné.
     """
+    mono_constraints = [0] * len(X_train.columns)
+    # Trouver l'index de price_ratio
+    if 'price_ratio' in X_train.columns:
+        price_idx = X_train.columns.get_loc('price_ratio')
+        mono_constraints[price_idx] = -1
+
     print("Configuration du modèle LightGBM...")
     lightGBM_model = lgb.LGBMRegressor(
             n_estimators=3000,
-            learning_rate=0.05,
+            learning_rate=0.2,
+            max_depth=-1,
             objective='tweedie',
             tweedie_variance_power=1.1,
             metric='rmse',
             subsample=0.8,
             colsample_bytree=0.8,
             n_jobs=-1,
-            random_state=42
+            random_state=42,
+            monotone_constraints=mono_constraints,
+            monotone_constraints_method="basic"
         )
 
     callbacks = [
