@@ -15,13 +15,13 @@ from forecast_2000.utils.Visualisation import visualisation
 chemin = '~/code/Enselb/Forecast_2000/data'
 data_path = os.path.expanduser(chemin)
 print(data_path)
-if not (data_path+"merged.parquet"):
+if not (data_path+"/merged.parquet"):
     df = get_data_size()
     print("✅Chargement du dataset")
-    df.to_parquet(data_path+"merged.parquet")
+    df.to_parquet(data_path+"/merged.parquet")
 
 else:
-    df = pd.read_parquet(data_path+"merged.parquet")
+    df = pd.read_parquet(data_path+"/merged.parquet")
 
 
 # Train / Test Split Function
