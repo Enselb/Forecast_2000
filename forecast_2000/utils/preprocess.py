@@ -46,7 +46,9 @@ def processed_features (df : pd.DataFrame):
 def preprocess_final(X_train, X_val, X_test):
     preprocessor = processed_features(X_train)
     X_train_processed = preprocessor.fit_transform(X_train)
+    del X_train
     X_val_processed   = preprocessor.transform(X_val)
+    del X_val
     X_test_processed  = preprocessor.transform(X_test)
 
 
