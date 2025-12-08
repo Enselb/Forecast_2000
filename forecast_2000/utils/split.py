@@ -3,6 +3,7 @@ import pandas as pd
 ## Train / Test Split Function
 #Début de  la fonction
 def split_data(df) :
+
     #Convert Date in Datetime + Set New Date into Index
     df['date'] = pd.to_datetime(df['date'])
     df.set_index(['date'],inplace = True)

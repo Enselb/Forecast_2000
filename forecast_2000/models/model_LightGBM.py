@@ -7,7 +7,7 @@ import time
 from forecast_2000.models.save_model_local import save_model_joblib
 
 
-def train_model_LightGBM(X_train: pd.DataFrame, y_train: pd.Series, X_val: pd.DataFrame, y_val: pd.Series) -> lgb.LGBMRegressor:
+def train_model_LightGBM(X_train: pd.DataFrame, X_val: pd.DataFrame, y_train: pd.Series, y_val: pd.Series) -> lgb.LGBMRegressor:
     """
     Entraîne un modèle LightGBM et le retourne.
 

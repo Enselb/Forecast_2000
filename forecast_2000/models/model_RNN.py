@@ -8,7 +8,7 @@ from sklearn.metrics import mean_squared_error
     Build, compile, train and return the model + training history.
 """
 
-def model_LSTM(X_train_processed, y_train, X_val_processed, y_val, X_test_processed, y_test):
+def model_LSTM(X_train_processed, X_val_processed,X_test_processed, y_train, y_val, y_test):
 
     LSTM_model = Sequential()
     LSTM_model.add(Input(shape=(X_train_processed.shape[1], 1)))

@@ -6,7 +6,7 @@ import time
 from forecast_2000.models.save_model_local import save_model_joblib
 
 
-def train_xgboost_model(X_train, y_train, X_val, y_val) -> XGBRegressor:
+def train_xgboost_model(X_train, X_val, y_train, y_val) -> XGBRegressor:
     """
     Entraîne un modèle XGBoost et le retourne.
 
