@@ -39,9 +39,11 @@ def processed_features (df : pd.DataFrame):
     print("✅Preproc int done")
     #  Unir le preproc avec les fonctions créées précédemment
     preproc_prefinal = make_union(month_sin, month_cos, dow_sin, dow_cos)
+    print("union1 done")
     preproc_final = make_union(preproc_int,preproc_prefinal)
+    print("✅union done")
     return preproc_final
-    print("✅Preproc final done")
+
 
 def preprocess_final(X_train, X_val, X_test):
     preprocessor = processed_features(X_train)
