@@ -37,11 +37,11 @@ def features_engineering(df):
         df[col_name] = df[col_name].fillna(0)
 
     # Rolling Window
-    windows = [28]
-    for window in tqdm(windows, desc="Création des Rolling Means"):
-        col_name = f'rolling_mean_{window}'
-        df[col_name] = df.groupby(['item_id', 'store_id'])['sales'].transform(lambda s: s.rolling(window).mean())
-        df[col_name] = df[col_name].fillna(0)
+    # windows = [28]
+    # for window in tqdm(windows, desc="Création des Rolling Means"):
+    #     col_name = f'rolling_mean_{window}'
+    #     df[col_name] = df.groupby(['item_id', 'store_id'])['sales'].transform(lambda s: s.rolling(window).mean())
+    #     df[col_name] = df[col_name].fillna(0)
 
     # Expanding Window
     print("Création de l'Expanding Mean...")
