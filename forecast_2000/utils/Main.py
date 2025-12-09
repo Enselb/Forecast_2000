@@ -70,5 +70,6 @@ print("✅X_test_processed  :", X_test_processed.shape)
 model, y_pred = model_selector(X_train_processed, X_train, X_test, X_test_processed, X_val_processed, X_val, y_train, y_val, y_test)
 
 # Visualisation des résultats du modèle sélectionné
-viz = visualisation(model, pd.read_parquet(file_path), df['item_id'], df['date'], df['date'], df['store_id'])
+df = pd.read_parquet(file_path)
+viz = visualisation(model, df, df['item_id'], df['date'], df['date'], df['store_id'])
 print("✅Visualisation displayed")
