@@ -11,6 +11,7 @@ from forecast_2000.utils.val_split import val_split
 from forecast_2000.utils.preprocess import preprocess_final
 from forecast_2000.utils.model_selector import model_selector
 from forecast_2000.utils.Visualisation import visualisation
+from sklearn.preprocessing import LabelEncoder
 
 # Retourne un dataframe des ventes ventes sélectionnées
 chemin = '~/code/Enselb/Forecast_2000/data'
@@ -41,6 +42,11 @@ else:
     print("✅Chargement de fichier car existant :", file_path)
     df = pd.read_parquet(file_path)
 
+# Label encoder la colonne item_id
+le = LabelEncoder()
+# Fit sur le train uniquement
+df['item_id'] = le.fit_transform(df['item_id'])
+
 # Train / Test Split Function
 X_train_val,X_test,y_train_val,y_test = split_data(df)
 print("✅Data splitted1")
@@ -64,5 +70,5 @@ print("✅X_test_processed  :", X_test_processed.shape)
 model, y_pred = model_selector(X_train_processed, X_train, X_test, X_test_processed, X_val_processed, X_val, y_train, y_val, y_test)
 
 # Visualisation des résultats du modèle sélectionné
-viz = visualisation(y_test, y_pred)
+viz = visualisation(model, pd.read_parquet(file_path), df['item_id'], df['date'], df['date'], df['store_id'])
 print("✅Visualisation displayed")

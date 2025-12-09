@@ -7,6 +7,7 @@ from sklearn.pipeline import make_union
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, FunctionTransformer
 from sklearn.preprocessing import RobustScaler, StandardScaler
+
 '''Scikit-learn pipeline that transforms a cleaned dataset to processed features > X_processed which will
 be trained in our models'''
 # Fonction preprocess regroupant plusieurs fonctions
@@ -32,8 +33,8 @@ def processed_features (df : pd.DataFrame):
     print("✅num transformer done")
     # Appliquer un column transformer pour paralléliser les séquences
     preproc_int = make_column_transformer(
-        (num_transformer, ['snap_CA','snap_TX','snap_WI','sell_price']),
-        (cat_transformer, ['item_id','store_id','event_name_1']),
+        (num_transformer, ['item_id','snap_CA','snap_TX','snap_WI','sell_price']),
+        (cat_transformer, ['store_id','event_name_1']),
         (year_transformer, ['year']),
         remainder='drop'
     )
