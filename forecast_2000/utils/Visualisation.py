@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from forecast_2000.utils.split import split_data
-from forecast_2000.models.model_XGBoost import evaluate_and_predict
+from forecast_2000.models.model_XGBoost import evaluate_and_predict_xgboost
 def visualisation(model, df, produit, date_de_début, date_de_fin, magasin):
 
     # On garde uniquement le produit, le magasin et la période choisis
@@ -17,7 +17,7 @@ def visualisation(model, df, produit, date_de_début, date_de_fin, magasin):
     X_train, X_test, y_train, y_test = split_data(df_produit)
 
     # Prédiction
-    model, y_pred = evaluate_and_predict(model, X_test, y_test)
+    model, y_pred = evaluate_and_predict_xgboost(model, X_test, y_test)
 
     # Conversion en numérique
     y_train = pd.to_numeric(y_train, errors="coerce")
