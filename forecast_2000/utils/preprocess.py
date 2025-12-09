@@ -23,7 +23,7 @@ def processed_features (df : pd.DataFrame):
     # CATEGORICAL PIPE
     cat_transformer = OneHotEncoder(drop='if_binary',
                                     handle_unknown='ignore',
-                                    sparse_output=False)
+                                    sparse_output=True)
     print("✅cat transformer done")
     # YEAR_PIPE
     year_transformer = make_pipeline(SimpleImputer(), StandardScaler())
