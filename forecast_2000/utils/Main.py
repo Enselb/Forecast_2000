@@ -14,15 +14,16 @@ from forecast_2000.utils.Visualisation import visualisation
 
 # Retourne un dataframe des ventes ventes sélectionnées
 chemin = '~/code/Enselb/Forecast_2000/data'
-data_path = os.path.expanduser(chemin)
-print(data_path)
-if not (Path(data_path).joinpath("/merged.parquet")).is_file():
+data_path = Path(os.path.expanduser(chemin))
+file_path = data_path /"merged.parquet"
+print(file_path)
+if not file_path.is_file():
     df = get_data_size()
     print("✅Chargement du dataset")
-    df.to_parquet(Path(data_path).joinpath("/merged.parquet"))
+    df.to_parquet(file_path)
 
 else:
-    df = pd.read_parquet(Path(data_path).joinpath("/merged.parquet"))
+    df = pd.read_parquet(file_path)
 
 
 # Train / Test Split Function
