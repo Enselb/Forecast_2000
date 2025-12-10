@@ -56,7 +56,9 @@ def preprocess_final(X_train, X_val, X_test):
     print("✅fit transform Xtrain terminé")
     X_val_processed   = preprocessor.transform(X_val)
     del X_val
+    print("✅fit transform Xval terminé")
     X_test_processed  = preprocessor.transform(X_test)
+    print("✅fit transform Xtest terminé")
 
 
     return pd.DataFrame(X_train_processed),pd.DataFrame(X_val_processed),pd.DataFrame(X_test_processed)
