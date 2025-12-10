@@ -12,3 +12,10 @@ google-cloud-storage
 scikit-learn
 joblib
 fastparquet
+fastapi
+uvicorn
+matp
+matplotlib
+seaborn
+streamlit
+pathlib
