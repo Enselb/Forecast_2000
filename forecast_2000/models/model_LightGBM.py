@@ -7,7 +7,7 @@ import time
 from forecast_2000.models.save_model_local import save_model_joblib
 
 
-def train_model_LightGBM(X_train: pd.DataFrame, y_train: pd.Series, X_val: pd.DataFrame, y_val: pd.Series) -> lgb.LGBMRegressor:
+def train_model_LightGBM(X_train: pd.DataFrame, X_val: pd.DataFrame, y_train: pd.Series, y_val: pd.Series) -> lgb.LGBMRegressor:
     """
     Entraîne un modèle LightGBM et le retourne.
 
@@ -24,7 +24,7 @@ def train_model_LightGBM(X_train: pd.DataFrame, y_train: pd.Series, X_val: pd.Da
         Le modèle LGBMRegressor entraîné.
     """
     mono_constraints = [0] * len(X_train.columns)
-    price_features = ['sell_price', 'price_ratio_item', 'price_ratio_cat', 'price_momentum']
+    price_features = ['sell_price', 'price_ratio', 'price_ratio_cat', 'price_momentum']
     # Trouver l'index de price_ratio
     for feature in price_features:
         if feature in X_train.columns:

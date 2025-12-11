@@ -1,0 +1,19 @@
+FROM python:3.12.12-slim-trixie AS base
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM base AS base_step_copy
+
+
+COPY forecast_2000 ./forecast_2000
+COPY requirements.txt ./requirements.txt
+
+FROM base_step_copy AS base_step_run
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+FROM base_step_run AS base_step_cmd
+
+CMD uvicorn forecast_2000.API.api:forecast_api --host 0.0.0.0

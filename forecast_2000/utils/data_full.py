@@ -113,7 +113,8 @@ def get_full_data():
     df = pd.merge(df, prices, on=['store_id', 'item_id', 'wm_yr_wk'], how='left')
 
     # drop des colonnes
-    df = df.drop(columns=['id', 'day', 'wm_yr_wk'])
+    #df = df.drop(columns=['id', 'day', 'wm_yr_wk'])
+    df = df.drop(columns=['id', 'day']) # on conserve wm_yr_wk pour le fetaure engineering sur les prix moyens par catégorie
 
     # gestion des prix Nan
     df['sell_price'] = df['sell_price'].fillna(0)

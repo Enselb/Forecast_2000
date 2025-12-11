@@ -115,7 +115,7 @@ def get_data_from_2014():
     df = pd.merge(df, prices, on=['store_id', 'item_id', 'wm_yr_wk'], how='left')
 
     # drop des colonnes
-    df = df.drop(columns=['id', 'day', 'wm_yr_wk'])
+    df = df.drop(columns=['id', 'day'])
 
     # Echantillonnage du fichier des ventes
     print("Echantillonnage...")

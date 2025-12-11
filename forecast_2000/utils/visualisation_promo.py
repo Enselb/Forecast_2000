@@ -4,7 +4,7 @@ import numpy as np
 import lightgbm as lgb
 import seaborn as sns
 
-def visualize_prediction_with_discount(model, df, item_id=None, store_id=None, state_id=None,
+def visualize_prediction_with_discount(model, df, item_id=None, cat_id=None, store_id=None, state_id=None,
                          split_date='2016-04-24', history_window=115,
                          price_change_pct=None, sim_start_date=None, sim_end_date=None):
     """
@@ -12,12 +12,6 @@ def visualize_prediction_with_discount(model, df, item_id=None, store_id=None, s
     Met à jour automatiquement 'price_ratio' lors de la simulation.
     """
     feature_cols = model.feature_name_
-    # --- 0. Sécurité : Gestion des arguments inversés (Compatibilité) ---
-    # Si l'utilisateur appelle l'ancienne signature (model, df, item_id, feature_cols)
-    # feature_cols recevra l'ID (int/str) et item_id recevra la liste des features.
-    # if isinstance(feature_cols, (int, str)) and isinstance(item_id, list):
-    #     print("⚠️ Attention : Arguments inversés détectés. Correction automatique...")
-    #     feature_cols, item_id = item_id, feature_cols
 
     split_date = pd.to_datetime(split_date)
     if sim_start_date: sim_start_date = pd.to_datetime(sim_start_date)
@@ -33,6 +27,10 @@ def visualize_prediction_with_discount(model, df, item_id=None, store_id=None, s
     if store_id is not None:
         mask = mask & (df['store_id'] == store_id)
         filters_desc.append(f"Magasin: {store_id}")
+    if cat_id is not None:
+        mask = mask & (df['cat_id'] == cat_id)
+        filters_desc.append(f"Catégorie: {cat_id}")
+
     if state_id is not None and 'state_id' in df.columns:
         mask = mask & (df['state_id'] == state_id)
         filters_desc.append(f"État: {state_id}")
@@ -92,6 +90,14 @@ def visualize_prediction_with_discount(model, df, item_id=None, store_id=None, s
             X_test_sim.loc[sim_mask, 'price_ratio'] *= (1 + price_change_pct)
             simulation_possible = True
 
+        if 'price_ratio_cat' in X_test_sim.columns:
+            X_test_sim.loc[sim_mask, 'price_ratio_cat'] *= (1 + price_change_pct)
+            simulation_possible = True
+
+        if 'price_momentum' in X_test_sim.columns:
+            X_test_sim.loc[sim_mask, 'price_momentum'] *= (1 + price_change_pct)
+            simulation_possible = True
+
         if simulation_possible:
             data_subset.loc[test_mask, 'pred_sales_sim'] = model.predict(X_test_sim)
             data_subset.loc[~test_mask, 'pred_sales_sim'] = np.nan
@@ -128,3 +134,45 @@ def visualize_prediction_with_discount(model, df, item_id=None, store_id=None, s
     plt.axvline(x=split_date, color='black', linestyle=':', alpha=0.5)
     plt.title("Prévisions & Simulation - " + " / ".join(filters_desc), fontsize=16)
     plt.show()
+
+   # 5. Calcul des Écarts (Return)
+    metrics = {}
+
+    # Définition de la fenêtre de calcul des métriques
+    # Si simulation : on calcule sur la période de simulation
+    # Sinon : on calcule sur toute la période de test
+    if is_simulating:
+        calc_mask = (agg_data.index >= sim_start_date) & (agg_data.index <= sim_end_date)
+        period_label = "Période Simulation"
+    else:
+        calc_mask = (agg_data.index > split_date)
+        period_label = "Période Test"
+
+    target_data = agg_data[calc_mask]
+
+    # Métrique 1 : Écart Réel vs Prévision Initiale
+    # Différence de volume total sur la période
+    real_vol = target_data['sales'].sum()
+    pred_vol = target_data['pred_sales'].sum()
+    gap_real = real_vol - pred_vol
+
+    metrics['gap_real_vol'] = gap_real
+    metrics['real_vol'] = real_vol
+    metrics['pred_vol'] = pred_vol
+
+    print(f"\n--- Analyse ({period_label}) ---")
+    print(f"Volume Réel : {real_vol:.0f} | Prévision Initiale : {pred_vol:.0f}")
+    print(f"Écart Réel vs Prév : {gap_real:+.0f} ({(gap_real/pred_vol if pred_vol!=0 else 0):+.1%})")
+
+    # Métrique 2 : Écart Prévision Initiale vs Scénario
+    if is_simulating:
+        sim_vol = target_data['pred_sales_sim'].sum()
+        gap_sim = sim_vol - pred_vol # Positif = Gain de ventes
+
+        metrics['gap_sim_vol'] = gap_sim
+        metrics['sim_vol'] = sim_vol
+
+        print(f"Volume Scénario : {sim_vol:.0f}")
+        print(f"Impact Scénario vs Prév : {gap_sim:+.0f} ({(gap_sim/pred_vol if pred_vol!=0 else 0):+.1%})")
+
+    return metrics
