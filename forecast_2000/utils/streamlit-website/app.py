@@ -6,6 +6,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from datetime import timedelta
 import os
+from google.cloud import storage
+import plotly.graph_objects as go
 
 # ---------------------------
 # 1. CONFIGURATION & DESIGN NEON
@@ -57,80 +59,44 @@ section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] label { col
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------
-# 2. FONCTION DE VISUALISATION (Adaptation de VOTRE fonction)
-# ---------------------------
-def visualize_seaborn_local(df_hist, df_future, split_date, price_change_pct, sim_start, sim_end):
-    """
-    Réplique EXACTEMENT votre fonction matplotlib/seaborn originale
-    mais adaptée pour fonctionner dans Streamlit.
-    """
-    sns.set_theme(style="whitegrid")
+API_URL = "https://forecast-49942818362.europe-west1.run.app/predict"
+SPLIT_DATE = pd.to_datetime('2016-04-24')
 
-    # Création de la figure (Fond transparent pour le style Néon)
-    fig = plt.figure(figsize=(15, 6))
-    fig.patch.set_alpha(0)
-    ax = plt.gca()
-    ax.set_facecolor((0, 0, 0, 0))
-
-    # 1. HISTORIQUE (Bleu) - On trace tout l'historique fourni
-    sns.lineplot(data=df_hist, x=df_hist.index, y='sales', label='Historique', color='#1f77b4', ax=ax)
-
-    # 2. RÉEL (Vert) - Données futures réelles
-    sns.lineplot(data=df_future, x=df_future.index, y='sales', label='Réel', color='green', alpha=0.5, ax=ax)
-
-    # 3. PRÉVISION INITIALE (Orange Pointillé) - Venant de l'API
-    sns.lineplot(data=df_future, x=df_future.index, y='pred_sales', label='Prévision Initiale', color='orange', linestyle='--', ax=ax)
-
-    # 4. SCÉNARIO SIMULATION (Rouge)
-    # On ne l'affiche que si une simulation est active
-    if price_change_pct != 0 and 'pred_sales_sim' in df_future.columns:
-        sns.lineplot(data=df_future, x=df_future.index, y='pred_sales_sim',
-                     label=f'Scénario ({price_change_pct:+.0%})', color='red', linewidth=2.5, ax=ax)
-
-        # Zone rouge ombrée (Période de simulation)
-        plt.axvspan(pd.to_datetime(sim_start), pd.to_datetime(sim_end), color='red', alpha=0.1)
-
-    # Ligne verticale de séparation (Split Date)
-    plt.axvline(x=pd.to_datetime(split_date), color='#212529', linestyle=':', alpha=0.5)
-
-    # Titres et Labels (Adaptés au thème clair/sombre)
-    plt.title(f"Prévisions & Simulation", fontsize=16, color='#212529')
-    ax.tick_params(colors='#212529')
-    ax.xaxis.label.set_color('#212529')
-    ax.yaxis.label.set_color('#212529')
-
-    plt.legend(facecolor='white', framealpha=0.9)
-    plt.tight_layout()
-
-    return fig
-
-# ---------------------------
-# 3. LOGIQUE MÉTIER LOCALE (Le "Math Hack")
-# ---------------------------
-def appliquer_simulation_math(df, pct_change, date_start, date_end, elasticity=-2.0):
-    """
-    Remplace le modèle ML pour la simulation de prix.
-    Si prix +10% -> Ventes -20% (avec élasticité -2.0)
-    """
-    df['pred_sales_sim'] = df['pred_sales'] # Copie de base
-
-    if pct_change == 0:
-        return df
-
-    # Facteur multiplicateur (ex: 1 + (0.10 * -2) = 0.8)
-    factor = 1 + (pct_change * elasticity)
-    factor = max(0, factor) # Sécurité
-
-    # Masque temporel
-    mask = (df.index >= pd.to_datetime(date_start)) & (df.index <= pd.to_datetime(date_end))
-
-    # Application
-    df.loc[mask, 'pred_sales_sim'] *= factor
+# fonctions de chargement des données
+@st.cache_data
+def load_historical_data():
+    gcs_path = 'gs://forecast_2000_raw_data/df_from_2016.parquet'
+    df = pd.read_parquet(gcs_path)
+    #df['date'] = pd.to_datetime(df['date'])
     return df
 
+@st.cache_data
+def load_forecast_data():
+    response = requests.get(API_URL)
+    df = response.json().get('predictions', [])
+    return df
+
+@st.cache_data
+def load_X_test_data():
+    gcs_path = 'gs://forecast_2000_raw_data/X_test_20251210.csv'
+    df = pd.read_csv(gcs_path)
+    df['date'] = pd.to_datetime(df['date'])
+    return df
+
+# chargement des données
+df_history = load_historical_data()
+df_forecast = load_forecast_data()
+X_test = load_X_test_data()
+# df_forecast = df_forecast.rename(columns={0: 'pred_sales'})
+
+df_forecast = pd.DataFrame(df_forecast)
+df_pred = pd.concat([X_test, df_forecast], axis=1)
+df_pred = df_pred.rename(columns={0: 'pred_sales'})
+df_pred.set_index('date', inplace=True)
+
+
 # ---------------------------
-# 4. INTERFACE
+# INTERFACE
 # ---------------------------
 col_titre, col_logo = st.columns([4, 1])
 with col_titre:
@@ -142,123 +108,151 @@ with col_logo:
 st.markdown("<div style='margin-bottom: 25px;'></div>", unsafe_allow_html=True)
 
 # SIDEBAR
-st.sidebar.header("Filtres & Simulation")
-selected_state = st.sidebar.selectbox("État", ["Californie", "Texas", "Wisconsin"])
-# Simulation liste magasins
-stores = ["Californie_1", "Californie_2", "Texas_1", "Wisconsin_1"]
-selected_store = st.sidebar.selectbox("Magasin", [s for s in stores if selected_state in s] or stores)
-selected_cat = st.sidebar.selectbox("Catégorie", ["HOBBIES","FOODS","HOUSEHOLD"])
-selected_item = st.sidebar.selectbox("Item ID", [f"{selected_cat}_1_{str(i).zfill(3)}" for i in range(1,10)])
+# st.sidebar.header("Filtres")
+# state_id = st.sidebar.selectbox("État", ["CA", "TX", "WI"])
+# #selected_state = st.sidebar.selectbox("État", ["Californiaexas", "Wisconsin"])
+# # Simulation liste magasins
+# stores = ["CA_1", "CA_2", "CA_3", "CA_4", "TX_1", "TX_2", "TX_3", "WI_1", "WI_2", "WI_3"]
+# #selected_state = st.sidebar.selectbox("État", ["Californie_2", "Texas_1", "Wisconsin_1"]
+# store_id = st.sidebar.selectbox("Magasin", [s for s in stores if state_id in s] or stores)
+# cat_id = st.sidebar.selectbox("Catégorie", ["HOBBIES","FOODS","HOUSEHOLD"])
+# item_id = st.sidebar.selectbox("Item ID", [f"{cat_id}_1_{str(i).zfill(3)}" for i in range(1,10)])
+
+
+st.sidebar.header("Filtres")
+
+# --- 1. Filtre État ---
+# Récupérer les états disponibles
+states_available = df_history['state_id'].unique().tolist() if not df_history.empty and 'state_id' in df_history.columns else ["CA", "TX", "WI"]
+state_options = ["Tous"] + sorted(states_available)
+state_id_selected = st.sidebar.selectbox("État", state_options)
+state_filter = state_id_selected if state_id_selected != "Tous" else None
+
+# --- 2. Filtre Magasin ---
+stores_available = df_history['store_id'].unique().tolist() if not df_history.empty and 'store_id' in df_history.columns else ["CA_1", "CA_2", "CA_3", "CA_4", "TX_1", "TX_2", "TX_3", "WI_1", "WI_2", "WI_3"]
+store_options = ["Tous"]
+# Filtrer les magasins disponibles en fonction de l'état sélectionné, sauf si "Tous" est choisi pour l'état
+if state_filter is not None:
+    store_options += sorted([s for s in stores_available if state_filter in s])
+else:
+    store_options += sorted(stores_available)
+
+store_id_selected = st.sidebar.selectbox("Magasin", store_options)
+store_filter = store_id_selected if store_id_selected != "Tous" else None
+
+# --- 3. Filtre Catégorie ---
+cats_available = df_history['cat_id'].unique().tolist() if not df_history.empty and 'cat_id' in df_history.columns else ["HOBBIES","FOODS","HOUSEHOLD"]
+cat_options = ["Tous"] + sorted(cats_available)
+cat_id_selected = st.sidebar.selectbox("Catégorie", cat_options)
+cat_filter = cat_id_selected if cat_id_selected != "Tous" else None
+
+# --- 4. Filtre Article ---
+items_available = []
+if cat_filter is not None and not df_history.empty and 'cat_id' in df_history.columns:
+    items_available = df_history[df_history['cat_id'] == cat_filter]['item_id'].unique().tolist()
+elif not df_history.empty and 'item_id' in df_history.columns:
+     items_available = df_history['item_id'].unique().tolist()
+else:
+    # Fallback pour le débogage/simulation
+    items_available = [f"{cat_filter or 'FOODS'}_1_{str(i).zfill(3)}" for i in range(1,10)]
+
+item_options = ["Tous"] + sorted(items_available)
+item_id_selected = st.sidebar.selectbox("Item ID", item_options)
+item_filter = item_id_selected if item_id_selected != "Tous" else None
+
 
 # Dates cachées (Logique interne)
 split_date = pd.to_datetime("2016-04-24")
 end_date = split_date + timedelta(days=28)
 
 st.sidebar.markdown("---")
-# INPUT PRIX
-price_change_slider = st.sidebar.slider("Variation prix (%)", -50, 50, 0, step=5)
-price_change_pct = price_change_slider / 100.0
 
-# DATES SIMULATION
-sim_col1, sim_col2 = st.sidebar.columns(2)
-sim_start = sim_col1.date_input("Sim start", value=split_date, min_value=split_date, max_value=end_date)
-sim_end = sim_col2.date_input("Sim end", value=end_date, min_value=split_date, max_value=end_date)
+# Dates cachées (Logique interne)
+split_date = pd.to_datetime("2016-04-24")
+end_date = split_date + timedelta(days=28)
 
 st.sidebar.markdown("---")
-run_sim = st.sidebar.button("Lancer la simulation ✅")
+# # INPUT PRIX
+# price_change_slider = st.sidebar.slider("Variation prix (%)", -50, 50, 0, step=5)
+# price_change_pct = price_change_slider / 100.0
 
-# ---------------------------
-# 5. EXECUTION & RECONSTRUCTION DES DONNÉES
-# ---------------------------
-chart_col, right_col = st.columns([3, 1.2])
-api_url = "http://127.0.0.1:8000/predict"
+# # DATES SIMULATION
+# sim_col1, sim_col2 = st.sidebar.columns(2)
+# sim_start = sim_col1.date_input("Sim start", value=split_date, min_value=split_date, max_value=end_date)
+# sim_end = sim_col2.date_input("Sim end", value=end_date, min_value=split_date, max_value=end_date)
 
-if run_sim:
-    try:
-        with st.spinner("📡 Appel API & Simulation..."):
-            # 1. APPEL API (Récupère juste la courbe 'pred_sales')
-            resp = requests.get(api_url)
+# st.sidebar.markdown("---")
+# run_sim = st.sidebar.button("Lancer la simulation ✅")
 
-            if resp.status_code == 200:
-                data_api = resp.json()
+# Fonction de visualisation
 
-                # Extraction des prédictions (liste brute)
-                if isinstance(data_api, dict):
-                    raw_preds = list(data_api.values())
-                else:
-                    raw_preds = list(data_api.get('predictions', []))
+def plot_aggregated_sales(df_h, df_p, state_id=None, store_id=None, item_id=None, cat_id=None):
+    # Fonction locale pour appliquer le filtre et agrégerfilter=None):
+    # Fonction locale pour appliquer le filtre et agréger
+    def apply_filter_logic(df, target_col):
+        mask = pd.Series(True, index=df.index)
+        filters_desc = []
 
-                # ---------------------------------------------------------
-                # RECONSTRUCTION DU CONTEXTE (DATA FAKE / SIMULÉE)
-                # Puisque l'API ne donne pas l'historique ni les dates
-                # ---------------------------------------------------------
+        if item_id is not None:
+            mask = mask & (df['item_id'] == item_id)
+            filters_desc.append(f"Item: {item_id}")
 
-                # A. Dates Futures (28 jours après split_date)
-                dates_future = [split_date + timedelta(days=i) for i in range(28)]
+        if store_id is not None:
+            mask = mask & (df['store_id'] == store_id)
+            filters_desc.append(f"Magasin: {store_id}")
 
-                # B. Prédictions API (On prend les 28 premières valeurs pour la démo)
-                y_pred_api = np.array(raw_preds[:28]) if len(raw_preds) >= 28 else np.random.rand(28)*10
+        if cat_id is not None:
+            mask = mask & (df['cat_id'] == cat_id)
+            filters_desc.append(f"Catégorie: {cat_id}")
 
-                # C. Création DataFrame Futur
-                df_future = pd.DataFrame({
-                    'date': dates_future,
-                    'pred_sales': y_pred_api,
-                    # On simule le "Réel" (y_test) car l'API ne le donne pas
-                    'sales': y_pred_api * np.random.uniform(0.9, 1.1, 28)
-                }).set_index('date')
+        if state_id is not None and 'state_id' in df.columns:
+            mask = mask & (df['state_id'] == state_id)
+            filters_desc.append(f"État: {state_id}")
 
-                # D. Création DataFrame Historique (Simulé pour l'affichage bleu)
-                # On génère 3 mois d'historique avant le split
-                dates_hist = [split_date - timedelta(days=i) for i in range(90, 0, -1)]
-                # On crée une tendance fictive qui connecte avec la prévision
-                mean_val = np.mean(y_pred_api)
-                y_hist = np.random.normal(mean_val, mean_val*0.2, 90)
+        if not filters_desc:
+            filters_desc.append("Vision Globale")
 
-                df_hist = pd.DataFrame({
-                    'date': dates_hist,
-                    'sales': y_hist
-                }).set_index('date')
+        # Agrégation
+        return df[mask].groupby(level=0)[target_col].sum(), " / ".join(filters_desc)
 
-                # ---------------------------------------------------------
-                # APPLICATION DE LA SIMULATION PRIX
-                # ---------------------------------------------------------
-                df_future = appliquer_simulation_math(df_future, price_change_pct, sim_start, sim_end)
+    # Filtre sur Historique et Prévision
+    ts_hist, title_suffix = apply_filter_logic(df_h, 'sales')
+    ts_pred, _ = apply_filter_logic(df_p, 'pred_sales')
 
-                # ---------------------------------------------------------
-                # AFFICHAGE
-                # ---------------------------------------------------------
-                with chart_col:
-                    st.markdown("<div class='glass'>", unsafe_allow_html=True)
-                    # APPEL DE LA FONCTION DE VIZ
-                    fig = visualize_seaborn_local(df_hist, df_future, split_date, price_change_pct, sim_start, sim_end)
-                    st.pyplot(fig, use_container_width=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
+    # 4. Tracé
+    fig = go.Figure()
 
-                with right_col:
-                    st.markdown("<div class='glass'>", unsafe_allow_html=True)
-                    st.markdown("### 📊 Analyse")
+    # Historique
+    fig.add_trace(go.Scatter(
+        x=ts_hist.index, y=ts_hist.values,
+        mode='lines', name='Historique',
+        line=dict(color='#1f77b4')
+    ))
 
-                    vol_base = df_future['pred_sales'].sum()
-                    vol_sim = df_future['pred_sales_sim'].sum() if 'pred_sales_sim' in df_future else vol_base
-                    diff = vol_sim - vol_base
+    # Prévision
+    fig.add_trace(go.Scatter(
+        x=ts_pred.index, y=ts_pred.values,
+        mode='lines', name='Prévision',
+        line=dict(color='red', dash='dash', width=2)
+    ))
 
-                    st.metric("Prévision Initiale", f"{vol_base:.0f}")
+    fig.update_layout(
+        title=f"Ventes & Prévisions - {title_suffix}",
+        xaxis_title="Date", yaxis_title="Volume",
+        template="plotly_dark", hovermode="x unified"
+    )
 
-                    lbl = "Scénario Prix" if price_change_pct != 0 else "Sans changement"
-                    st.metric(lbl, f"{vol_sim:.0f}", delta=f"{diff:+.0f}")
+    return fig, ts_hist, ts_pred
 
-                    st.markdown("---")
-                    st.caption("Focus : 28 prochains jours")
-                    st.dataframe(df_future[['sales', 'pred_sales', 'pred_sales_sim']].head(10).style.format("{:.0f}"), height=200)
-                    st.markdown("</div>", unsafe_allow_html=True)
+if not df_history.empty and not df_pred.empty:
+    fig, ts_hist, ts_pred = plot_aggregated_sales(df_history, df_pred, state_filter, store_filter, item_filter, cat_filter)
 
-            else:
-                st.error("Erreur API")
-    except Exception as e:
-        st.error(f"Erreur: {e}")
-
+    if fig:
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        # Le warning a déjà été affiché dans la fonction plot_aggregated_sales si les données étaient vides
+        pass
+elif not df_history.empty and df_pred.empty:
+    st.warning("Les données de prédiction sont manquantes ou n'ont pas pu être chargées/traitées.")
 else:
-    with chart_col:
-        st.markdown("<div class='glass' style='height:360px; display:flex; align-items:center; justify-content:center;'><div class='muted'>Lancez la simulation.</div></div>", unsafe_allow_html=True)
-    with right_col:
-         st.markdown("<div class='glass'>Info<br>Mode: Simulation Frontend</div>", unsafe_allow_html=True)
+    st.error("Les données historiques n'ont pas pu être chargées.")
