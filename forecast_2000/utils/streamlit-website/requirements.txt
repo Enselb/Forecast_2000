@@ -1,0 +1,15 @@
+pandas
+numpy
+xgboost
+#XGBRegressor
+tensorflow
+statsmodels
+scikit-learn
+pmdarima
+lightgbm
+tqdm
+google-cloud-storage
+scikit-learn
+joblib
+fastparquet
+streamlit
