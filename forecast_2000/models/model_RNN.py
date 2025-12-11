@@ -46,7 +46,7 @@ def model_LSTM(X_train_processed, X_val_processed,X_test_processed, y_train, y_v
     y_pred = LSTM_model.predict(X_test_processed)
 
     # Performance
-    rmse = mean_squared_error(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     print(f"RMSE sur le test set : {rmse:.4f}")
 
     # Sauvegarde du modèle
