@@ -38,16 +38,25 @@ forecast_api.state.model = load_model()
 
 def load_X_test() :
     #Load X_test
-    ##client = storage.Client()
-    ##blobs = list(client.get_bucket(BUCKET_NAME).list_blobs(prefix="X_test"))
-    ###latest_blob = max(blobs, key=lambda x: x.updated)
-    ##latest_model_path_to_save = os.path.join(LOCAL_REGISTRY_PATH,latest_blob.name)
-    ##print(f'{latest_model_path_to_save}')
-    ##latest_blob.download_to_filename(latest_model_path_to_save)
+    file_path = Path(LOCAL_REGISTRY_PATH) / "X_test_20251210.parquet"
 
-    X_test = pd.read_csv('gs://forecast_2000_raw_data/X_test_20251210.csv')
+    # Chargement du X_train depuis GCS si pas déjà en local et sauvegarde locale
+    # EN PARQUET POUR GARDER LES CATEGORIES!!!!
+    if not file_path.is_file():
+        print("Downloading X_test from cloud storage...")
+        X_test = pd.read_csv('gs://forecast_2000_raw_data/X_test_20251210.csv')
 
-    print("✅ X_test downloaded from cloud storage")
+        # Les colonnes category ont été perdus pendant la sauvegarde en CSV, on \
+        # les reconvertit d'object en category
+        for col in X_test.select_dtypes(include=['object']).columns:
+            X_test[col] = X_test[col].astype('category')
+
+        X_test.to_parquet(file_path)
+        print(f"✅ X_test downloaded and saved locally: {file_path}")
+    else:
+        print(f"✅ Loading X_test from local file: {file_path}")
+        X_test = pd.read_parquet(file_path)
+
     return X_test
 
 def load_df() :
@@ -76,13 +85,13 @@ def index():
 def predict():
     model = forecast_api.state.model
     ##X_test.columns = model.feature_name_
-    y_pred = model.predict(X_test)
+    y_pred = model.predict(X_test.set_index('date',drop=True))
 
     ##image_path = Path("Plot_Previsions_et_Simulation.png")
     ##if not image_path.is_file():
     ##return {"error": "Image not found on the server"}
     ##return FileResponse(image_path)
-    return dict(y_pred)
+    return {"predictions": y_pred.tolist()}
 
 if __name__ == '__main__' :
     predict()
